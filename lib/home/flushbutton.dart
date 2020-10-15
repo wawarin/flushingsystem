@@ -1,3 +1,4 @@
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
 class FlushButtonn extends StatefulWidget {
@@ -9,6 +10,8 @@ class FlushButtonn extends StatefulWidget {
 
 class _FlushButtonnState extends State<FlushButtonn>
     with SingleTickerProviderStateMixin {
+  final DatabaseReference = FirebaseDatabase.instance.reference();
+  int flush_count = 0;
   double _scale;
   AnimationController _controller;
 
@@ -49,6 +52,7 @@ class _FlushButtonnState extends State<FlushButtonn>
         ),
         Center(
           child: GestureDetector(
+            onTapCancel: _todefult,
             onTap: _showresult,
             onTapDown: _onTapDown,
             onTapUp: _onTapUp,
@@ -95,13 +99,21 @@ class _FlushButtonnState extends State<FlushButtonn>
 
   void _onTapDown(TapDownDetails details) {
     _controller.forward();
+    // DatabaseReference.child("flush").set(1);
   }
 
   void _onTapUp(TapUpDetails details) {
     _controller.reverse();
+    // DatabaseReference.child("flush").set(0);
   }
 
   void _showresult() {
-    print('Flushhhhhhhhhhh');
+    flush_count = flush_count + 1;
+    // DatabaseReference.child("flush").set({"counter8": flush_count, "flush": 1});
+    DatabaseReference.child("flush").set({"status": "active"});
+  }
+
+  void _todefult() {
+    // DatabaseReference.child("flush").set(0);
   }
 }

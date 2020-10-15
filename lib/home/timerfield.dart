@@ -1,7 +1,9 @@
 import 'package:app_new/home/home.dart';
-import 'package:app_new/home/subbutton.dart';
+// import 'package:app_new/home/subbutton.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
+// import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 class TimerInput extends StatefulWidget {
   TimerInput({Key key}) : super(key: key);
@@ -12,10 +14,14 @@ class TimerInput extends StatefulWidget {
 class _TimerInputState extends State<TimerInput> {
   final _hoursController = TextEditingController();
   final _minsController = TextEditingController();
+
+  final DatabaseReference = FirebaseDatabase.instance.reference();
+
   int hour = 12;
   int mins = 0;
   String timerhour, timermins;
   String displaytimer = "12:00";
+  int collect_hours, collect_mins, submit_count = 0;
 
   // Methode
   Widget hoursText() {
@@ -169,6 +175,22 @@ class _TimerInputState extends State<TimerInput> {
       } else {
         displaytimer = "${hour.toString()}:${mins.toString()}";
       }
+      // debugPrint("displaytimer  = ${displaytimer}");
+      collect_hours = hour;
+      collect_mins = mins;
+      submit_count = submit_count + 1;
+      // debugPrint(collect_hours.toString());
+      // debugPrint(collect_mins.toString());
+      // DatabaseReference.child("timer").set({
+      //   "hours": collect_hours,
+      //   "minutes": collect_mins,
+      //   "couter": submit_count
+      // });
+      DatabaseReference.child("timer").set({
+        "hours": collect_hours,
+        "minutes": collect_mins,
+        "status": "active"
+      });
     });
   }
 }

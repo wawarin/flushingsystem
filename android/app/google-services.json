@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "980797715460",
+    "firebase_url": "https://flushingsystem.firebaseio.com",
+    "project_id": "flushingsystem",
+    "storage_bucket": "flushingsystem.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:980797715460:android:97ae563b4450c11b713151",
+        "android_client_info": {
+          "package_name": "com.example.app_new"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "980797715460-tc763638ijs075slpf9r6dgve9qb87pe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0qY-ydU1zJUOToLT4eioVHWDmN3z5LIU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "980797715460-tc763638ijs075slpf9r6dgve9qb87pe.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
