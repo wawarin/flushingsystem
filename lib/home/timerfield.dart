@@ -1,8 +1,5 @@
-import 'package:app_new/home/home.dart';
-// import 'package:app_new/home/subbutton.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 class TimerInput extends StatefulWidget {
@@ -12,159 +9,190 @@ class TimerInput extends StatefulWidget {
 }
 
 class _TimerInputState extends State<TimerInput> {
-  final _hoursController = TextEditingController();
-  final _minsController = TextEditingController();
+  final DatabaseReference databaseReference =
+      FirebaseDatabase.instance.reference();
 
-  final DatabaseReference = FirebaseDatabase.instance.reference();
-
+  int initHour = 12;
+  int initMins = 0;
   int hour = 12;
   int mins = 0;
   String timerhour, timermins;
+  bool isReset = true;
+  bool reset = false;
   String displaytimer = "12:00";
   int collect_hours, collect_mins, submit_count = 0;
 
   // Methode
-  Widget hoursText() {
-    return TextFormField(
-      controller: _hoursController,
-      decoration: InputDecoration(
-          labelText: "Enter Hours",
-          focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(25),
-              borderSide: BorderSide(color: Colors.black26)),
-          enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(25),
-              borderSide: BorderSide(color: Colors.black26))),
-      keyboardType: TextInputType.datetime,
-      // validator: (value) {
-      //   return value;
-      // },
+  void resetProcess() {
+    setState(() {
+      isReset = !isReset;
+    });
+    // setState(() {
+    //   collect_hours = 12;
+    //   collect_mins = 0;
+    //   reset = !reset;
+    //   displaytimer = "12:00";
+    //   print("TESSSSSSSSSST");
+    // });
+  }
+
+  Widget flushButton() {
+    return Column(
+      children: [
+        RaisedButton(
+          onPressed: () {},
+          padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+          color: Colors.blueAccent.shade400,
+          child: Text(
+            "Flushing",
+            style: TextStyle(fontSize: 20, color: Colors.white),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+          ),
+        ),
+        Text(
+          "Tap to Flushing!!!",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.black38,
+          ),
+        )
+      ],
     );
   }
 
-  Widget minsText() {
-    return TextFormField(
-      controller: _minsController,
-      decoration: InputDecoration(
-          labelText: "Enter Minutes",
-          focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(25),
-              borderSide: BorderSide(color: Colors.black26)),
-          enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(25),
-              borderSide: BorderSide(color: Colors.black26))),
-      keyboardType: TextInputType.number,
+  Widget timerPicker() {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [hourPicker(), minutesPicker()],
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  Widget hourPicker() {
+    if (!isReset) {
+      print('Here');
+      return Column(
         children: <Widget>[
           Padding(
-            padding: const EdgeInsets.only(bottom: 10.0),
+            padding: EdgeInsets.only(bottom: 5.0),
             child: Text(
-              "Set Timer",
-              softWrap: true,
-              style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold),
+              "HH",
+              style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
             ),
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Padding(
-                    padding: EdgeInsets.only(bottom: 5.0),
-                    child: Text(
-                      "HH",
-                      style: TextStyle(
-                          fontSize: 18.0, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  NumberPicker.integer(
-                      initialValue: hour,
-                      minValue: 0,
-                      maxValue: 23,
-                      // zeroPad: true,
-                      // listViewWidth: 100,
-                      onChanged: (val) {
-                        setState(() {
-                          hour = val;
-                        });
-                      })
-                ],
-              ),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Padding(
-                    padding: EdgeInsets.only(bottom: 5.0),
-                    child: Text(
-                      "MM",
-                      style: TextStyle(
-                          fontSize: 18.0, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  NumberPicker.integer(
-                      initialValue: mins,
-                      minValue: 0,
-                      maxValue: 59,
-                      zeroPad: true,
-                      // listViewWidth: 60.00,
-                      onChanged: (val) {
-                        setState(() {
-                          mins = val;
-                        });
-                      })
-                ],
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 5.0),
-            child: Text(
-              displaytimer,
-              style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold),
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: <Widget>[
-              RaisedButton(
-                onPressed: () {
-                  setState(() {
-                    Navigator.pushReplacement(context,
-                        MaterialPageRoute(builder: (context) => Home()));
-                  });
-                },
-                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
-                color: Colors.red,
-                child: Text(
-                  "reset",
-                  style: TextStyle(fontSize: 18, color: Colors.white),
-                ),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.0)),
-              ),
-              RaisedButton(
-                onPressed: submit,
-                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
-                color: Colors.green,
-                child: Text(
-                  "submit",
-                  style: TextStyle(fontSize: 18, color: Colors.white),
-                ),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.0)),
-              ),
-            ],
-          ),
+          NumberPicker.integer(
+              // initialValue: initHour,
+              initialValue: hour,
+              minValue: 0,
+              maxValue: 23,
+              onChanged: (val) {
+                setState(() {
+                  hour = val;
+                });
+              })
         ],
+      );
+    } else {
+      return Column(
+        children: <Widget>[
+          Padding(
+            padding: EdgeInsets.only(bottom: 5.0),
+            child: Text(
+              "HH",
+              style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+            ),
+          ),
+          NumberPicker.integer(
+              initialValue: hour,
+              minValue: 0,
+              maxValue: 23,
+              onChanged: (val) {
+                setState(() {
+                  hour = val;
+                  // if (reset != reset) {
+                  //   val = 12;
+                  // } else {
+                  //   hour = val;
+                  // }
+                });
+              })
+        ],
+      );
+    }
+  }
+
+  Widget minutesPicker() {
+    return Column(
+      // mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Padding(
+          padding: EdgeInsets.only(bottom: 5.0),
+          child: Text(
+            "MM",
+            style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+          ),
+        ),
+        NumberPicker.integer(
+            // initialValue: initMins,
+            initialValue: mins,
+            minValue: 0,
+            maxValue: 59,
+            zeroPad: true,
+            onChanged: (val) {
+              setState(() {
+                mins = val;
+              });
+            })
+      ],
+    );
+  }
+
+  Widget showTimer() {
+    return Text(
+      displaytimer,
+      style: TextStyle(
+        // color: Colors.red,
+        fontSize: 30.0,
+        fontWeight: FontWeight.bold,
       ),
+    );
+  }
+
+  Widget showButton() {
+    return Row(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [resetButton(), submitButton()],
+    );
+  }
+
+  Widget submitButton() {
+    return RaisedButton(
+      onPressed: submit,
+      // padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+      color: Colors.green,
+      child: Text(
+        "submit",
+        style: TextStyle(fontSize: 18, color: Colors.white),
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
+    );
+  }
+
+  Widget resetButton() {
+    return RaisedButton(
+      onPressed: () {
+        resetProcess();
+      },
+      // padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+      color: Colors.red,
+      child: Text(
+        "reset",
+        style: TextStyle(fontSize: 18, color: Colors.white),
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
     );
   }
 
@@ -175,22 +203,32 @@ class _TimerInputState extends State<TimerInput> {
       } else {
         displaytimer = "${hour.toString()}:${mins.toString()}";
       }
-      // debugPrint("displaytimer  = ${displaytimer}");
+
       collect_hours = hour;
       collect_mins = mins;
       submit_count = submit_count + 1;
-      // debugPrint(collect_hours.toString());
-      // debugPrint(collect_mins.toString());
-      // DatabaseReference.child("timer").set({
+
+      // databaseReference.child("timer").set({
       //   "hours": collect_hours,
       //   "minutes": collect_mins,
-      //   "couter": submit_count
+      //   "status": "active"
       // });
-      DatabaseReference.child("timer").set({
-        "hours": collect_hours,
-        "minutes": collect_mins,
-        "status": "active"
-      });
     });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          flushButton(),
+          timerPicker(),
+          showTimer(),
+          showButton(),
+        ],
+      ),
+    );
   }
 }
