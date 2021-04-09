@@ -1,17 +1,31 @@
 import 'package:app_new/home/authen.dart';
+import 'package:app_new/home/myservice.dart';
 import 'package:app_new/home/regispage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_signin_button/flutter_signin_button.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class MethodeSignup extends StatelessWidget {
-  const MethodeSignup({Key key}) : super(key: key);
+  final GoogleSignIn googleSignIn = GoogleSignIn();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  var res;
+  MethodeSignup({Key key}) : super(key: key);
+
+  Future<dynamic> signInWithGoogle() async {
+    final GoogleSignInAccount googleUser = await googleSignIn.signIn();
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
+
+    final AuthCredential credential = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
+    var user = await _auth.signInWithCredential(credential);
+    return res = user.user;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title: Text("Sign Up"),
-      // ),
       body: SafeArea(
         child: Container(
           decoration: BoxDecoration(
@@ -49,16 +63,21 @@ class MethodeSignup extends StatelessWidget {
                     child: SignInButton(
                       Buttons.Google,
                       text: 'Sign up with google',
-                      onPressed: () {},
+                      onPressed: () {
+                        signInWithGoogle().then((value) {
+                          if (res != null) {
+                            MaterialPageRoute materialPageRoute =
+                                MaterialPageRoute(
+                                    builder: (context) => MyService());
+                            Navigator.of(context).pushAndRemoveUntil(
+                                materialPageRoute, (route) => false);
+                          } else {
+                            print('fail');
+                          }
+                        });
+                      },
                     ),
                   ),
-                  // Padding(
-                  //     padding: EdgeInsets.all(10.0),
-                  //     child: SignInButton(
-                  //       Buttons.Twitter,
-                  //       text: "Sign up with Twitter",
-                  //       onPressed: () {},
-                  //     )),
                   Padding(
                       padding: EdgeInsets.all(10.0),
                       child: GestureDetector(

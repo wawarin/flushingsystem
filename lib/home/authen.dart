@@ -1,6 +1,8 @@
 import 'package:app_new/home/myservice.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_signin_button/flutter_signin_button.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class Authen extends StatefulWidget {
   Authen({Key key}) : super(key: key);
@@ -11,10 +13,32 @@ class Authen extends StatefulWidget {
 
 class _AuthenState extends State<Authen> {
   // Variable
+  final GoogleSignIn googleSignIn = GoogleSignIn();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   final formkey = GlobalKey<FormState>();
   String emailUser, passwordUser;
 
   // Methode
+
+  Future<dynamic> signInWithGoogle() async {
+    final GoogleSignInAccount googleUser = await googleSignIn.signIn();
+    final GoogleSignInAuthentication googleAuth =
+        await googleUser.authentication;
+
+    final AuthCredential credential = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken, accessToken: googleAuth.accessToken);
+    var user = await _auth.signInWithCredential(credential);
+    print(user.user);
+    if (user.user != null) {
+      MaterialPageRoute materialPageRoute =
+          MaterialPageRoute(builder: (context) => MyService());
+      Navigator.of(context)
+          .pushAndRemoveUntil(materialPageRoute, (route) => false);
+    } else {
+      print('Fail');
+    }
+  }
+
   Widget backButton() {
     return IconButton(
       icon: Icon(
@@ -34,7 +58,15 @@ class _AuthenState extends State<Authen> {
         key: formkey,
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [showAppname(), emailText(), passwordText()],
+          children: [
+            showAppname(),
+            emailText(),
+            passwordText(),
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: googleSiginButton(),
+            )
+          ],
         ),
       ),
     );
@@ -113,16 +145,21 @@ class _AuthenState extends State<Authen> {
     );
   }
 
-  Future<void> checkAuthen() async {
+  Future<void> checkMailAuthen() async {
     FirebaseAuth auth = FirebaseAuth.instance;
     await auth
         .signInWithEmailAndPassword(email: emailUser, password: passwordUser)
         .then((res) {
-      print("Auten success");
-      MaterialPageRoute materialPageRoute =
-          MaterialPageRoute(builder: (context) => MyService());
-      Navigator.of(context)
-          .pushAndRemoveUntil(materialPageRoute, (route) => false);
+      if (auth.currentUser.emailVerified) {
+        print("Authen Success");
+        MaterialPageRoute materialPageRoute =
+            MaterialPageRoute(builder: (context) => MyService());
+        Navigator.of(context)
+            .pushAndRemoveUntil(materialPageRoute, (route) => false);
+      } else if (!auth.currentUser.emailVerified) {
+        print(auth.currentUser.emailVerified);
+        myAlert("Login Error", 'Please verify email before login.');
+      }
     }).catchError((res) {
       String title = res.code;
       String message = res.message;
@@ -156,6 +193,15 @@ class _AuthenState extends State<Authen> {
         Navigator.of(context).pop();
       },
       child: Text("OK"),
+    );
+  }
+
+  Widget googleSiginButton() {
+    return SignInButton(
+      Buttons.GoogleDark,
+      onPressed: () {
+        signInWithGoogle();
+      },
     );
   }
 
@@ -195,7 +241,7 @@ class _AuthenState extends State<Authen> {
         onPressed: () {
           formkey.currentState.save();
           print('Email: $emailUser, Password: $passwordUser');
-          checkAuthen();
+          checkMailAuthen();
         },
         child: Icon(
           Icons.navigate_next,

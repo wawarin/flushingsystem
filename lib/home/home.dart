@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:connectivity/connectivity.dart';
 import 'package:app_new/home/authen.dart';
 import 'package:app_new/home/methodesigup.dart';
 import 'package:app_new/home/myservice.dart';
@@ -14,23 +14,23 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  //  Variable
+  bool network = true;
   // Medthod
-
   // @override
   // void initState() {
   //   super.initState();
-  //   // setState(() {
-  //   //   Future.delayed(Duration(milliseconds: 10)).then((value) {
-  //   //     checkStatus();
-  //   //   });
-  //   // });
-  //   // Timer.run(() {
-  //   //   checkStatus();
-  //   // });
-  //   SchedulerBinding.instance.addPostFrameCallback((timeStamp) {
-  //     checkStatus();
-  //   });
+  //   _checkInternet();
   // }
+
+  _checkInternet() async {
+    var result = await Connectivity().checkConnectivity();
+    if (result == ConnectivityResult.none) {
+      return network = false;
+    } else {
+      return network = true;
+    }
+  }
 
   Future<void> checkStatus() async {
     FirebaseAuth firebaseAuth = FirebaseAuth.instance;
@@ -42,6 +42,31 @@ class _HomeState extends State<Home> {
       Navigator.of(context)
           .pushAndRemoveUntil(materialPageRoute, (route) => false);
     }
+  }
+
+  _showDialog() {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text(
+              "No internet connect",
+              style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.bold),
+            ),
+            content: Text('Please connect the internet'),
+            actions: [
+              FlatButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('Ok'),
+              )
+            ],
+          );
+        });
   }
 
   _showlogo() {
@@ -87,9 +112,15 @@ class _HomeState extends State<Home> {
                         style: TextStyle(fontSize: 18, color: Colors.white),
                       ),
                       onPressed: () {
-                        MaterialPageRoute materialPageRoute = MaterialPageRoute(
-                            builder: (BuildContext context) => Authen());
-                        Navigator.of(context).push(materialPageRoute);
+                        _checkInternet();
+                        if (network == false) {
+                          _showDialog();
+                        } else {
+                          MaterialPageRoute materialPageRoute =
+                              MaterialPageRoute(
+                                  builder: (BuildContext context) => Authen());
+                          Navigator.of(context).push(materialPageRoute);
+                        }
                       },
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15.0)),
@@ -101,11 +132,16 @@ class _HomeState extends State<Home> {
                       color: Colors.blueAccent,
                       child: Text("Sign Up"),
                       onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (BuildContext context) =>
-                                    MethodeSignup()));
+                        _checkInternet();
+                        if (network == false) {
+                          _showDialog();
+                        } else {
+                          MaterialPageRoute materialPageRoute =
+                              MaterialPageRoute(
+                                  builder: (BuildContext context) =>
+                                      MethodeSignup());
+                          Navigator.of(context).push(materialPageRoute);
+                        }
                       },
                     ),
                   ],

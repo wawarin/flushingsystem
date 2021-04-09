@@ -1,4 +1,6 @@
 import 'package:app_new/home/myservice.dart';
+import 'package:app_new/home/home.dart';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -44,7 +46,9 @@ class _RegisterState extends State<Register> {
             email: emailString, password: passwordString)
         .then((response) {
       print('Register Success for Email = $emailString');
+      firebaseAuth.currentUser.sendEmailVerification();
       setupDisplayName();
+      emailVerifyAlert();
     }).catchError((response) {
       String title = response.code;
       String message = response.message;
@@ -56,13 +60,9 @@ class _RegisterState extends State<Register> {
   Future<void> setupDisplayName() async {
     FirebaseAuth firebaseAuth = FirebaseAuth.instance;
     var user = firebaseAuth.currentUser;
+
     if (user != null) {
       user.updateProfile(displayName: nameString);
-
-      MaterialPageRoute materialPageRoute =
-          MaterialPageRoute(builder: (BuildContext context) => MyService());
-      Navigator.of(context).pushAndRemoveUntil(
-          materialPageRoute, (Route<dynamic> route) => false);
     }
   }
 
@@ -90,6 +90,41 @@ class _RegisterState extends State<Register> {
                 child: Text('OK'),
                 onPressed: () {
                   Navigator.of(context).pop();
+                },
+              )
+            ],
+          );
+        });
+  }
+
+  void emailVerifyAlert() {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: ListTile(
+              leading: Icon(
+                Icons.add_alert,
+                color: Colors.red,
+                size: 48.0,
+              ),
+              title: Text(
+                "Verify Email!!!",
+                style: TextStyle(
+                  color: Colors.red,
+                ),
+              ),
+            ),
+            content:
+                Text("Please check your email inbox and click verify link."),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('OK'),
+                onPressed: () {
+                  MaterialPageRoute materialPageRoute = MaterialPageRoute(
+                      builder: (BuildContext context) => Home());
+                  Navigator.of(context).pushAndRemoveUntil(
+                      materialPageRoute, (Route<dynamic> route) => false);
                 },
               )
             ],

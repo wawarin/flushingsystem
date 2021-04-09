@@ -1,8 +1,13 @@
+import 'package:app_new/home/myservice.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 class TimerInput extends StatefulWidget {
+  void test() {
+    print("COME ON");
+  }
+
   TimerInput({Key key}) : super(key: key);
   @override
   _TimerInputState createState() => _TimerInputState();
@@ -11,7 +16,6 @@ class TimerInput extends StatefulWidget {
 class _TimerInputState extends State<TimerInput> {
   final DatabaseReference databaseReference =
       FirebaseDatabase.instance.reference();
-
   int initHour = 12;
   int initMins = 0;
   int hour = 12;
@@ -26,14 +30,8 @@ class _TimerInputState extends State<TimerInput> {
   void resetProcess() {
     setState(() {
       isReset = !isReset;
+      // hour = 12;
     });
-    // setState(() {
-    //   collect_hours = 12;
-    //   collect_mins = 0;
-    //   reset = !reset;
-    //   displaytimer = "12:00";
-    //   print("TESSSSSSSSSST");
-    // });
   }
 
   Widget flushButton() {
@@ -84,12 +82,13 @@ class _TimerInputState extends State<TimerInput> {
           ),
           NumberPicker.integer(
               // initialValue: initHour,
-              initialValue: hour,
+              initialValue: initHour,
               minValue: 0,
               maxValue: 23,
               onChanged: (val) {
                 setState(() {
-                  hour = val;
+                  // hour = val;
+                  val = hour;
                 });
               })
         ],
@@ -105,17 +104,13 @@ class _TimerInputState extends State<TimerInput> {
             ),
           ),
           NumberPicker.integer(
+              // infiniteLoop: true,
               initialValue: hour,
               minValue: 0,
               maxValue: 23,
               onChanged: (val) {
                 setState(() {
                   hour = val;
-                  // if (reset != reset) {
-                  //   val = 12;
-                  // } else {
-                  //   hour = val;
-                  // }
                 });
               })
         ],
@@ -184,9 +179,14 @@ class _TimerInputState extends State<TimerInput> {
   Widget resetButton() {
     return RaisedButton(
       onPressed: () {
-        resetProcess();
+        // resetProcess();
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MyService(),
+          ),
+        );
       },
-      // padding: EdgeInsets.symmetric(horizontal: 40, vertical: 10),
       color: Colors.red,
       child: Text(
         "reset",
@@ -204,6 +204,7 @@ class _TimerInputState extends State<TimerInput> {
         displaytimer = "${hour.toString()}:${mins.toString()}";
       }
 
+      // print(myservice.devicename);
       collect_hours = hour;
       collect_mins = mins;
       submit_count = submit_count + 1;
