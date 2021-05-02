@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app_new/home/home.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -21,11 +22,14 @@ class _MyServiceState extends State<MyService> {
   TextEditingController _textFieldController = TextEditingController();
   String codeDialog;
   String valueText;
+  String b_status1 = "";
+  String b_status2 = "";
 
   bool status = false;
 
   List<String> devicename = [];
   List<String> item = [];
+  List batt_val = [];
 
 /* //////////// Timer field variable /////////////////////// */
   final DatabaseReference databaseReference =
@@ -47,6 +51,7 @@ class _MyServiceState extends State<MyService> {
     findDisplayName();
     readDevice();
     refreshProcess();
+    battCheckall();
   }
 
   Future<void> addChecker() async {
@@ -211,7 +216,7 @@ class _MyServiceState extends State<MyService> {
       Map<dynamic, dynamic> data = value.value;
       data.forEach((key, value) {
         if (value['connection'] == 'ack') {
-          print(key);
+          // print(key);
           onlinedevice.add(key);
         }
       });
@@ -242,6 +247,12 @@ class _MyServiceState extends State<MyService> {
             );
           },
         );
+        onlinedevice.forEach((element) {
+          databaseReference
+              .child('device')
+              .child(element)
+              .update({'connection': 'syn'});
+        });
       } else {
         showDialog(
           context: context,
@@ -280,13 +291,6 @@ class _MyServiceState extends State<MyService> {
     await collectionReference.snapshots().listen((event) {
       List<DocumentSnapshot> snapshots = event.docs;
       for (var device in snapshots) {
-        print(device.id);
-        print("HERE");
-        print(devicename);
-        // setState(() {
-        //   devicename.add(device.id);
-        //   devicename.toSet().toList();
-        // });
         addedDevice(device.id);
       }
     });
@@ -342,11 +346,8 @@ class _MyServiceState extends State<MyService> {
 
   void addedDevice(String str) {
     setState(() {
-      print(str);
       item.add(str);
-      print(item);
       devicename = item.toSet().toList();
-      print(devicename);
     });
   }
 
@@ -365,7 +366,6 @@ class _MyServiceState extends State<MyService> {
                 Navigator.of(context).pop();
                 onscreen = devicename[index];
                 onlineStatusDevice(onscreen);
-                print(onscreen);
               });
               // onlineStatusDevice(onscreen);
             },
@@ -522,7 +522,9 @@ class _MyServiceState extends State<MyService> {
 
   Future<void> processSignout() async {
     FirebaseAuth auth = FirebaseAuth.instance;
-    await auth.signOut().then((response) {
+    GoogleSignIn user = GoogleSignIn();
+    await auth.signOut().then((response) async {
+      user.signOut();
       print('Sign out success');
       MaterialPageRoute materialPageRoute =
           MaterialPageRoute(builder: (context) => Home());
@@ -661,35 +663,6 @@ class _MyServiceState extends State<MyService> {
         Timer(Duration(seconds: 4), () {
           showWorkResult(onscreen);
         });
-        // showDialog(
-        //   context: context,
-        //   builder: (context) {
-        //     return AlertDialog(
-        //       title: Text(
-        //         'Ops!!',
-        //         style: TextStyle(
-        //           color: Colors.red,
-        //           fontSize: 24.0,
-        //           fontWeight: FontWeight.bold,
-        //         ),
-        //       ),
-        //       content: Text(
-        //         "This device not online status. Please check device connection and reconnect device to the WiFi. But the toilet can still work through the sensor system.",
-        //         style: TextStyle(
-        //           fontSize: 16,
-        //         ),
-        //       ),
-        //       actions: [
-        //         FlatButton(
-        //           onPressed: () {
-        //             Navigator.of(context).pop();
-        //           },
-        //           child: Text('Close'),
-        //         )
-        //       ],
-        //     );
-        //   },
-        // );
       }
     }
   }
@@ -839,12 +812,12 @@ class _MyServiceState extends State<MyService> {
   Widget resetButton() {
     return RaisedButton(
       onPressed: () {
-        // Navigator.push(
-        //   context,
-        //   MaterialPageRoute(
-        //     builder: (context) => MyService(),
-        //   ),
-        // );
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MyService(),
+          ),
+        );
       },
       color: Colors.red,
       child: Text(
@@ -887,7 +860,7 @@ class _MyServiceState extends State<MyService> {
             });
       } else {
         onlineStatusDevice(onscreen);
-        print(onscreen);
+        // print(onscreen);
         if (mins < 10) {
           displaytimer = "${hour.toString()}:0${mins.toString()}";
         } else {
@@ -899,6 +872,175 @@ class _MyServiceState extends State<MyService> {
           "status": "activate"
         });
       }
+    });
+  }
+
+  Future<dynamic> batteryCheck(device) async {
+    DataSnapshot test = await databaseReference
+        .child('device')
+        .child(device)
+        .child('batt1')
+        .once();
+    print(test.value);
+    return test.value;
+  }
+
+  Widget showBatt() {
+    bool show = true;
+    if (onscreen == 'Flush Automate') {
+      show = false;
+    } else {
+      batteryCheck(onscreen);
+      print(batt_val);
+      return Visibility(
+        visible: show,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Builder(builder: (context) {
+              if (batt_val.contains('batt1')) {
+                print('haha');
+                print(b_status1);
+                return Column(
+                  children: [
+                    Icon(
+                      Icons.battery_alert_outlined,
+                      color: Colors.red,
+                      size: 30.0,
+                      semanticLabel: 'Text to announce in accessibility modes',
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        "Battery 1 Low!!!",
+                        style: TextStyle(
+                          color: Colors.red,
+                        ),
+                      ),
+                    )
+                  ],
+                );
+              } else {
+                return Column(
+                  children: [
+                    Icon(
+                      Icons.battery_full_outlined,
+                      color: Colors.green,
+                      size: 30.0,
+                      semanticLabel: 'Text to announce in accessibility modes',
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        "Battery 1 High",
+                        style: TextStyle(
+                          color: Colors.green,
+                        ),
+                      ),
+                    )
+                  ],
+                );
+              }
+            }),
+            Builder(builder: (context) {
+              if (batt_val.contains('batt2')) {
+                return Column(
+                  children: [
+                    Icon(
+                      Icons.battery_alert_outlined,
+                      color: Colors.red,
+                      size: 30.0,
+                      semanticLabel: 'Text to announce in accessibility modes',
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        "Battery 2 Low!!!",
+                        style: TextStyle(
+                          color: Colors.red,
+                        ),
+                      ),
+                    )
+                  ],
+                );
+              } else {
+                return Column(
+                  children: [
+                    Icon(
+                      Icons.battery_full_outlined,
+                      color: Colors.green,
+                      size: 30.0,
+                      semanticLabel: 'Text to announce in accessibility modes',
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        "Battery 2 High",
+                        style: TextStyle(
+                          color: Colors.green,
+                        ),
+                      ),
+                    )
+                  ],
+                );
+              }
+            })
+          ],
+        ),
+      );
+    }
+    return SizedBox();
+  }
+
+  Widget showTitleError(String title) {
+    return ListTile(
+      leading: Icon(
+        Icons.battery_alert,
+        size: 48.0,
+        color: Colors.red,
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: Colors.red,
+          fontSize: 28.0,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Future<void> battCheckall() async {
+    List device = [];
+    databaseReference.child('device').once().then((DataSnapshot value) {
+      Map<dynamic, dynamic> data = value.value;
+      data.forEach((key, value) {
+        if (value['batt1'] == 'low' || value['batt2'] == 'low') {
+          device.add(key);
+        }
+      });
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: showTitleError('Low Battery'),
+            content: Text(
+              "Device $device low battery.",
+              style: TextStyle(
+                fontSize: 16,
+              ),
+            ),
+            actions: [
+              FlatButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('Close'),
+              )
+            ],
+          );
+        },
+      );
     });
   }
 
@@ -925,6 +1067,7 @@ class _MyServiceState extends State<MyService> {
               timerPicker(),
               showTimer(),
               showButton(),
+              showBatt(),
             ],
           ),
         ),
